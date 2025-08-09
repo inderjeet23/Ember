@@ -12,7 +12,7 @@ export default function App(){
 
   // Recompute on load for all projects
   useEffect(()=>{
-    if (!auth?.currentUser?.uid) return
+    if (!auth?.currentUser?.uid || !db) return
     const ref = doc(db, 'users', auth.currentUser.uid)
     getDoc(ref).then(async doc => {
       const projects = doc.data()?.projects as Project[] || []

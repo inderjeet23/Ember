@@ -1,10 +1,13 @@
 import { useParams, Link } from 'react-router-dom'
 import { load, save } from '@/lib/storage'
 import StateBadge from '@/components/StateBadge'
-import { FormEvent, useMemo, useState } from 'react'
+import { FormEvent, useMemo, useState, useEffect } from 'react'
 import { applyGain } from '@/lib/momentum'
-import { Project } from '@/lib/types'
+import { Project, Task } from '@/lib/types'
 import { id } from '@/lib/id'
+import { isFirebaseEnabled } from '@/lib/firebase'
+import { subscribeProject, subscribeTasks, fxAddTask, fxActivateTask } from '@/lib/fx'
+import { tinyPop } from '@/lib/reward'
 
 export default function ProjectPage(){
   const { id: pid } = useParams()
@@ -24,7 +27,7 @@ export default function ProjectPage(){
   const project = useFx ? projectFx : db.projects.find(p => p.id === pid)
   if (!project) return <div className="text-neutral-400">Not found.</div>
 
-  const tasks = (tasksFx ?? project.tasks)
+  const tasks = (tasksFx ?? project?.tasks)
   const active = tasks.filter(t=>t.isActive && !t.isComplete).slice(0,3)
   const backlog = tasks.filter(t=>!t.isActive && !t.isComplete)
   const completed = tasks.filter(t=>t.isComplete)
@@ -37,12 +40,12 @@ export default function ProjectPage(){
     const activeCount = active.length
     const t = { id: id(), name, isActive: activate && activeCount < 3, isComplete: false, createdAt: Date.now() }
     if (useFx) {
-      await fxAddTask(project.id, name, activate)
-      if (activate && activeCount >= 3) await applyGainAndPersist(project.id, 'railOverflow')
+      await fxAddTask(project?.id, name, activate)
+      if (activate && activeCount >= 3) await applyGainAndPersist(project?.id, 'railOverflow')
     } else {
-      project.tasks.push(t as any)
+      project?.tasks.push(t as any)
       if (activate && activeCount >= 3) applyGain(project, 'railOverflow')
-      project.updatedAt = Date.now()
+      project?.updatedAt = Date.now()
       const next = { ...db }
       save(next); setDb(next)
     }
@@ -52,32 +55,32 @@ export default function ProjectPage(){
   async function activateTask(taskId: string){
     const activeCount = active.length
     if (activeCount >= 3) return // swap flow omitted for MVP
-    if (useFx) { await fxActivateTask(project.id, taskId, true) }
+    if (useFx) { await fxActivateTask(project?.id, taskId, true) }
     else {
-      const t = project.tasks.find(t=>t.id===taskId)
+      const t = project?.tasks.find(t=>t.id===taskId)
       if (!t) return
       t.isActive = true
-      project.updatedAt = Date.now()
+      project?.updatedAt = Date.now()
       const next = { ...db }; save(next); setDb(next)
     }
   }
 
   async function completeTask(taskId: string){
-    const t = project.tasks.find(t=>t.id===taskId)
+    const t = project?.tasks.find(t=>t.id===taskId)
     if (!t || t.isComplete) return
     t.isComplete = true
     tinyPop()
     t.isActive = false
     t.completedAt = Date.now()
     applyGain(project, 'taskComplete')
-    project.updatedAt = Date.now()
-    const doneCount = project.tasks.filter(x=>x.isComplete).length
+    project?.updatedAt = Date.now()
+    const doneCount = project?.tasks.filter(x=>x.isComplete).length
     if (doneCount > 0 && doneCount % 3 === 0) applyGain(project, 'milestoneComplete')
     const next = { ...db }; save(next); setDb(next)
   }
 
   const reentry = useMemo(()=>{
-    const lastTouch = project.lastTouchedAt ? new Date(project.lastTouchedAt).toLocaleString() : '—'
+    const lastTouch = project?.lastTouchedAt ? new Date(project?.lastTouchedAt).toLocaleString() : '—'
     const nextStep = active[0]?.name || backlog[0]?.name || 'Add a tiny next step'
     const blocker = backlog.find(b=>b.name.toLowerCase().includes('block') )?.name || '—'
     return { lastTouch, nextStep, blocker }
@@ -87,12 +90,12 @@ export default function ProjectPage(){
     <div className="space-y-6">
       <div className="card">
         <div className="flex items-center justify-between">
-          <div className="text-xl font-semibold">{project.name}</div>
-          <StateBadge state={project.state} />
+          <div className="text-xl font-semibold">{project?.name}</div>
+          <StateBadge state={project?.state} />
         </div>
-        <div className="mt-2 text-sm opacity-80">Momentum: {project.momentumScore}</div>
+        <div className="mt-2 text-sm opacity-80">Momentum: {project?.momentumScore}</div>
         <div className="mt-3">
-          <Link to={`/sprint/${project.id}`} className="btn">Start 25-minute sprint</Link>
+          <Link to={`/sprint/${project?.id}`} className="btn">Start 25-minute sprint</Link>
         </div>
         <div className="mt-3 text-sm opacity-80">
           <div>Last touch: {reentry.lastTouch}</div>

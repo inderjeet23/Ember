@@ -1,11 +1,22 @@
-import { useMemo } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { load } from '@/lib/storage'
 import ProgressCard from '@/widgets/ProgressCard'
+import { isFirebaseEnabled } from '@/lib/firebase'
+import { Win } from '@/lib/types'
 
 export default function WinsPage(){
   const db = load()
-  const wins = db.projects.flatMap(p => p.wins.map(w => ({...w, projectName: p.name, score: p.momentumScore}))).sort((a,b)=> b.createdAt - a.createdAt).slice(0,50)
+  const localWins = db.projects.flatMap(p => p.wins.map(w => ({...w, projectName: p.name, score: p.momentumScore}))).sort((a,b)=> b.createdAt - a.createdAt).slice(0,50)
   const exampleProject = db.projects[0]
+  const useFx = isFirebaseEnabled()
+  const [rows, setRows] = useState<(Win & { projectName: string })[]>([])
+
+  // TODO: Implement fetching wins from Firebase
+  // useEffect(()=>{
+  //   if (!useFx) return
+  //   // subscribeAllWins(setRows)
+  // }, [useFx])
+
 
   return (
     <div className="space-y-6"><h1 className="text-2xl font-semibold">Dopamine Board</h1>

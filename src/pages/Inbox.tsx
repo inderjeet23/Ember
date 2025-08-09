@@ -4,6 +4,7 @@ import { Idea } from '@/lib/types'
 import { id } from '@/lib/id'
 import { applyGain } from '@/lib/momentum'
 import { Link, useNavigate } from 'react-router-dom'
+import { burstGood } from '@/lib/reward'
 
 export default function InboxPage(){
   const [db, setDb] = useState(load())

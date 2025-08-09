@@ -1,6 +1,6 @@
 export type ProjectType = 'writing' | 'video' | 'dev' | 'other'
 export type ProjectState = 'fresh' | 'warm' | 'cooling' | 'cold'
-export type WinType = 'taskComplete' | 'milestoneComplete' | 'sprintComplete' | 'ideaPromoted'
+export type WinType = 'taskComplete' | 'milestoneComplete' | 'sprintComplete' | 'ideaPromoted' | 'touchOnly'
 export type IdeaStatus = 'cooling' | 'promoted' | 'archived'
 
 export interface Task {

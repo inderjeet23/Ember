@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { load, save } from '@/lib/storage'
 import { applyGain } from '@/lib/momentum'
+import { burstGood } from '@/lib/reward'
 
 export default function SprintPage(){
   const { projectId } = useParams()
