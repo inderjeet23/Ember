@@ -15,12 +15,16 @@ import {
   Unsubscribe,
   signOut,
 } from 'firebase/auth';
+import WelcomeStep from '@/components/onboarding/WelcomeStep'; // Import WelcomeStep
 
 export default function App(){
   const loc = useLocation()
   const [user, setUser] = useState<User | null>(null)
+  const [showOnboarding, setShowOnboarding] = useState(true); // State to control onboarding visibility
 
-    useEffect(() => {
+  console.log('App render: User:', user, 'showOnboarding:', showOnboarding);
+
+  useEffect(() => {
     let unsubscribe: Unsubscribe | undefined;
     if (auth) {
       unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -77,8 +81,23 @@ export default function App(){
     localStorage.setItem('hc', on ? '1' : '0')
   }
 
+  const handleGetStarted = () => {
+    console.log('Get Started clicked!');
+    setShowOnboarding(false);
+  };
+
+  const handleAddIdeaFirst = () => {
+    console.log('Add Idea First clicked!');
+    setShowOnboarding(false);
+  };
+
   
   if (!user) return <Login />
+
+  // Conditionally render WelcomeStep or main app content
+  if (showOnboarding) {
+    return <WelcomeStep onGetStarted={handleGetStarted} onAddIdeaFirst={handleAddIdeaFirst} />;
+  }
 
   return (
     <div className="min-h-screen">
