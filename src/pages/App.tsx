@@ -7,18 +7,16 @@ import { auth, db } from '@/lib/firebase'
 import { doc, getDoc, setDoc } from 'firebase/firestore'
 import { Project } from '@/lib/types'
 import Login from './Login'
-import { onAuthStateChanged, type User } from 'firebase/auth'
+import { onAuthStateChanged, signOut, type User } from 'firebase/auth'
 
 export default function App(){
   const loc = useLocation()
   const [user, setUser] = useState<User | null>(null)
-  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     if (!auth) return
     return onAuthStateChanged(auth, (user) => {
       setUser(user)
-      setLoading(false)
     })
   }, [])
 
@@ -61,16 +59,21 @@ export default function App(){
     localStorage.setItem('hc', on ? '1' : '0')
   }
 
-  if (loading) return <div>Loading...</div>
+  
   if (!user) return <Login />
 
   return (
     <div className="min-h-screen">
+      <header className="flex justify-between items-center p-4 bg-white shadow-md">
+        <div className="text-lg font-semibold">Ember</div>
+        {user && (
+          <button className="btn" onClick={() => signOut(auth)}>Sign Out</button>
+        )}
+      </header>
       <div className="mx-auto max-w-6xl p-4">
         <div className="flex gap-6">
           <aside className="hidden md:block sidebar">
             <div className="card sticky top-4 space-y-2">
-              <div className="text-lg font-semibold mb-2">Ember</div>
               <Link className="header-link block" to="/">Dashboard</Link>
               <Link className="header-link block" to="/inbox">Idea Inbox</Link>
               <Link className="header-link block" to="/wins">Dopamine Board</Link>
