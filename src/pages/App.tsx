@@ -7,18 +7,36 @@ import { auth, db } from '@/lib/firebase'
 import { doc, getDoc, setDoc } from 'firebase/firestore'
 import { Project } from '@/lib/types'
 import Login from './Login'
-import { onAuthStateChanged, signOut, type User } from 'firebase/auth'
+import {
+  getAuth,
+  onAuthStateChanged,
+  User,
+  Auth,
+  Unsubscribe,
+  signOut,
+} from 'firebase/auth';
 
 export default function App(){
   const loc = useLocation()
   const [user, setUser] = useState<User | null>(null)
 
-  useEffect(() => {
-    if (!auth) return
-    return onAuthStateChanged(auth, (user) => {
-      setUser(user)
-    })
-  }, [])
+    useEffect(() => {
+    let unsubscribe: Unsubscribe | undefined;
+    if (auth) {
+      unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+        setUser(currentUser);
+      });
+    } else {
+      // If auth is not available, we don't need to set loading to false
+      // as the loading state is no longer used for rendering.
+    }
+
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
+  }, [auth]);
 
   // Recompute on load for all projects
   useEffect(()=>{
@@ -67,7 +85,7 @@ export default function App(){
       <header className="flex justify-between items-center p-4 bg-white shadow-md">
         <div className="text-lg font-semibold">Ember</div>
         {user && auth && (
-          <button className="btn" onClick={() => signOut(auth)}>Sign Out</button>
+          <button className="btn" onClick={() => signOut(auth!)}>Sign Out</button>
         )}
       </header>
       <div className="mx-auto max-w-6xl p-4">
