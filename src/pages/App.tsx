@@ -12,11 +12,13 @@ import { onAuthStateChanged, type User } from 'firebase/auth'
 export default function App(){
   const loc = useLocation()
   const [user, setUser] = useState<User | null>(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     if (!auth) return
     return onAuthStateChanged(auth, (user) => {
       setUser(user)
+      setLoading(false)
     })
   }, [])
 
@@ -59,6 +61,7 @@ export default function App(){
     localStorage.setItem('hc', on ? '1' : '0')
   }
 
+  if (loading) return <div>Loading...</div>
   if (!user) return <Login />
 
   return (
