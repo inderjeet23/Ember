@@ -1,5 +1,5 @@
 import { initializeApp, getApps } from 'firebase/app';
-import { getAuth, onAuthStateChanged, signInAnonymously } from 'firebase/auth';
+import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { getFirestore, enableIndexedDbPersistence } from 'firebase/firestore';
 export function isFirebaseEnabled() {
     return Boolean(import.meta.env.VITE_FIREBASE_PROJECT_ID);
@@ -23,6 +23,11 @@ export async function ensureUser() {
         throw new Error('Firebase not configured');
     if (auth.currentUser)
         return auth.currentUser;
-    await signInAnonymously(auth);
-    return new Promise((res) => onAuthStateChanged(auth, (u) => u && res(u)));
+    return new Promise((res, rej) => onAuthStateChanged(auth, (u) => u ? res(u) : rej('No user signed in')));
+}
+export async function signInWithGoogle() {
+    if (!auth)
+        throw new Error('Firebase not configured');
+    const provider = new GoogleAuthProvider();
+    await signInWithPopup(auth, provider);
 }

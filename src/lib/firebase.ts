@@ -1,5 +1,5 @@
 import { initializeApp, getApps } from 'firebase/app'
-import { getAuth, onAuthStateChanged, signInAnonymously, type User } from 'firebase/auth'
+import { getAuth, onAuthStateChanged, signInAnonymously, type User, GoogleAuthProvider, signInWithPopup } from 'firebase/auth'
 import { getFirestore, enableIndexedDbPersistence } from 'firebase/firestore'
 
 export function isFirebaseEnabled(){
@@ -26,6 +26,11 @@ if (db) {
 export async function ensureUser(): Promise<User> {
   if (!auth) throw new Error('Firebase not configured')
   if (auth.currentUser) return auth.currentUser
-  await signInAnonymously(auth)
-  return new Promise((res) => onAuthStateChanged(auth, (u) => u && res(u)))
+  return new Promise((res, rej) => onAuthStateChanged(auth, (u) => u ? res(u) : rej('No user signed in')))
+}
+
+export async function signInWithGoogle() {
+  if (!auth) throw new Error('Firebase not configured')
+  const provider = new GoogleAuthProvider()
+  await signInWithPopup(auth, provider)
 }

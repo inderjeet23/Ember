@@ -9,7 +9,6 @@ import InboxPage from './pages/Inbox'
 import SprintPage from './pages/Sprint'
 import WinsPage from './pages/Wins'
 import DebugPage from './pages/Debug'
-import { ensureUser } from './lib/firebase'
 
 const router = createBrowserRouter([
   { path: '/', element: <App />, children: [
@@ -22,10 +21,8 @@ const router = createBrowserRouter([
   ]}
 ])
 
-ensureUser().then(() => {
-  ReactDOM.createRoot(document.getElementById('root')!).render(
-    <React.StrictMode>
-      <RouterProvider router={router} />
-    </React.StrictMode>
-  )
-})
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
+    <RouterProvider router={router} />
+  </React.StrictMode>
+)

@@ -1,12 +1,22 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { Link, Outlet, useLocation } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import QuickAddFab from '@/components/QuickAddFab';
 import { dailyRecompute } from '@/lib/momentum';
 import { auth, db } from '@/lib/firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
+import Login from './Login';
+import { onAuthStateChanged } from 'firebase/auth';
 export default function App() {
     const loc = useLocation();
+    const [user, setUser] = useState(null);
+    useEffect(() => {
+        if (!auth)
+            return;
+        return onAuthStateChanged(auth, (user) => {
+            setUser(user);
+        });
+    }, []);
     // Recompute on load for all projects
     useEffect(() => {
         if (!auth?.currentUser?.uid || !db)
@@ -17,7 +27,7 @@ export default function App() {
             projects.forEach(p => dailyRecompute(p));
             await setDoc(ref, { projects });
         });
-    }, []);
+    }, [user]);
     // Keyboard shortcuts
     useEffect(() => {
         const handler = (e) => {
@@ -50,5 +60,7 @@ export default function App() {
         const on = el.classList.toggle('hc');
         localStorage.setItem('hc', on ? '1' : '0');
     }
+    if (!user)
+        return _jsx(Login, {});
     return (_jsx("div", { className: "min-h-screen", children: _jsx("div", { className: "mx-auto max-w-6xl p-4", children: _jsxs("div", { className: "flex gap-6", children: [_jsx("aside", { className: "hidden md:block sidebar", children: _jsxs("div", { className: "card sticky top-4 space-y-2", children: [_jsx("div", { className: "text-lg font-semibold mb-2", children: "Ember" }), _jsx(Link, { className: "header-link block", to: "/", children: "Dashboard" }), _jsx(Link, { className: "header-link block", to: "/inbox", children: "Idea Inbox" }), _jsx(Link, { className: "header-link block", to: "/wins", children: "Dopamine Board" }), _jsx(Link, { className: "header-link block", to: "/debug", children: "Debug" }), _jsx("button", { className: "header-link w-full text-left", onClick: toggleHC, children: "Toggle High Contrast" }), _jsx("div", { className: "text-xs text-neutral-400", children: "Shortcuts: H, I, W, D, T" })] }) }), _jsxs("main", { className: "flex-1", children: [_jsx(Outlet, {}), _jsx(QuickAddFab, {})] })] }) }) }));
 }

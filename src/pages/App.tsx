@@ -1,14 +1,24 @@
 
 import { Link, Outlet, useLocation } from 'react-router-dom'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import QuickAddFab from '@/components/QuickAddFab'
 import { dailyRecompute } from '@/lib/momentum'
 import { auth, db } from '@/lib/firebase'
 import { doc, getDoc, setDoc } from 'firebase/firestore'
 import { Project } from '@/lib/types'
+import Login from './Login'
+import { onAuthStateChanged, type User } from 'firebase/auth'
 
 export default function App(){
   const loc = useLocation()
+  const [user, setUser] = useState<User | null>(null)
+
+  useEffect(() => {
+    if (!auth) return
+    return onAuthStateChanged(auth, (user) => {
+      setUser(user)
+    })
+  }, [])
 
   // Recompute on load for all projects
   useEffect(()=>{
@@ -19,7 +29,7 @@ export default function App(){
       projects.forEach(p => dailyRecompute(p))
       await setDoc(ref, { projects })
     })
-  }, [])
+  }, [user])
 
   // Keyboard shortcuts
   useEffect(()=>{
@@ -48,6 +58,8 @@ export default function App(){
     const on = el.classList.toggle('hc')
     localStorage.setItem('hc', on ? '1' : '0')
   }
+
+  if (!user) return <Login />
 
   return (
     <div className="min-h-screen">
