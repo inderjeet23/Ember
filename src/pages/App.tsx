@@ -66,7 +66,7 @@ export default function App(){
     <div className="min-h-screen">
       <header className="flex justify-between items-center p-4 bg-white shadow-md">
         <div className="text-lg font-semibold">Ember</div>
-        {user && (
+        {user && auth && (
           <button className="btn" onClick={() => signOut(auth)}>Sign Out</button>
         )}
       </header>
