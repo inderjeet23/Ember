@@ -1,6 +1,6 @@
 import { FormEvent, useState } from 'react'
 import { load, save } from '@/lib/storage'
-import { Idea } from '@/lib/types'
+import type { Idea, Project } from '@/lib/types'
 import { id } from '@/lib/id'
 import { applyGain } from '@/lib/momentum'
 import { Link, useNavigate } from 'react-router-dom'
@@ -24,13 +24,13 @@ export default function InboxPage(){
     const idea = db.ideas.find(i => i.id === ideaId)
     if (!idea) return
     const name = prompt('Project name?') || 'New Project'
-    const p = { id: id(), name, type: 'other' as const, momentumScore: 60, state: 'warm' as const, createdAt: Date.now(), updatedAt: Date.now(), tasks: [], wins: [] }
-    db.projects.unshift(p as any)
+    const p: Project = { id: id(), name, type: 'other' as const, momentumScore: 60, state: 'warm' as const, createdAt: Date.now(), updatedAt: Date.now(), tasks: [], wins: [] }
+    db.projects.unshift(p)
     idea.status = 'promoted'
     idea.promotedProjectId = p.id
     const tname = prompt('First tiny task?') || 'First step'
     p.tasks.push({ id: id(), name: tname, isActive: true, isComplete: false, createdAt: Date.now() })
-    applyGain(p as any, 'ideaPromoted'); burstGood()
+    applyGain(p, 'ideaPromoted'); burstGood()
     save(db); setDb({ ...db })
     nav(`/project/${p.id}`)
   }
